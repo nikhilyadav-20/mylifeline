@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Dil Se Sorry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: one screen at a time, five steps (manao, maafi, yaadein, shukriya, gulab) with a progress dot row; deliberately dark and single-theme. */
+:root{
+  --bg:#12141f;
+  --bg-deep:#0c0e17;
+  --card:#1b1f2e;
+  --card-edge:#2a3046;
+  --rose:#e0698f;
+  --rose-soft:#f6a9c3;
+  --rose-dark:#b84870;
+  --ink:#f5f1f7;
+  --muted:#8f9bb8;
+  --paper:#f7f3f5;
+  --stroke:#4a2c2c;
+  --font-display:'Dancing Script','Brush Script MT',cursive;
+  --font-body:'Quicksand','Segoe UI',system-ui,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background:radial-gradient(1200px 700px at 50% -10%,#1c2033 0%,var(--bg) 55%,var(--bg-deep) 100%) fixed,var(--bg);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:16px;
+  line-height:1.6;
+  padding-block:20px 28px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  overflow-x:hidden;
+}
+button{font-family:inherit}
+:focus-visible{outline:2px solid var(--rose-soft);outline-offset:3px}
+
+/* ambient hearts */
+.ambient{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.ambient i{position:absolute;bottom:-30px;color:var(--rose);opacity:0;font-style:normal;animation:rise linear infinite}
+@keyframes rise{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:.35}90%{opacity:.18}100%{transform:translateY(-110vh) rotate(25deg);opacity:0}}
+
+.app{position:relative;z-index:1;max-width:680px;margin:0 auto;min-height:calc(100% - 40px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+.app.wide{max-width:900px}
+.screen{width:100%;display:flex;flex-direction:column;align-items:center;text-align:center;gap:14px}
+.screen.enter{animation:in .7s cubic-bezier(.2,.7,.2,1) both}
+@keyframes in{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+h1,h2{font-family:var(--font-display);font-weight:700;margin:0;line-height:1.1;text-wrap:balance}
+h1{font-size:clamp(2.6rem,9vw,3.8rem)}
+h2{font-size:clamp(2.1rem,7vw,3rem)}
+.lead{color:var(--rose);font-weight:700;font-size:clamp(1.1rem,3.6vw,1.35rem);margin:0}
+.soft{color:var(--muted);max-width:30rem;margin:0;text-wrap:pretty}
+
+/* mascot frame */
+.frame{width:min(240px,62vw);aspect-ratio:1;background:var(--paper);border-radius:18px;padding:6px;box-shadow:0 18px 50px rgba(0,0,0,.45),0 0 0 1px rgba(255,255,255,.04)}
+.frame svg{width:100%;height:100%;display:block}
+.bob{animation:bob 3.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+
+/* buttons */
+.row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:6px}
+.btn{border:0;cursor:pointer;border-radius:999px;padding:14px 28px;font-weight:700;font-size:1rem;color:#2a1220;background:var(--rose);box-shadow:0 8px 26px rgba(224,105,143,.35);transition:transform .15s,box-shadow .15s,background .15s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 12px 32px rgba(224,105,143,.5)}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:#222738;color:#d6dbea;box-shadow:none;font-weight:600}
+.btn.ghost:hover{background:#2a3046;box-shadow:none}
+
+/* progress */
+.dots{display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(255,255,255,.03)}
+.dots span{width:11px;height:11px;border-radius:50%;background:#2f364c;transition:background .3s,transform .3s}
+.dots span.on{background:var(--rose);transform:scale(1.2)}
+.dots span.done{background:var(--rose-dark)}
+
+/* modal */
+.backdrop{position:fixed;inset:0;z-index:20;background:rgba(8,10,18,.72);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px}
+.modal{width:min(380px,100%);background:var(--card);border:1.5px dashed var(--rose-dark);border-radius:22px;padding:28px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;box-shadow:0 0 60px rgba(224,105,143,.18);animation:in .4s both}
+.sticker{width:112px;height:112px;border-radius:50%;background:var(--paper);padding:4px;border:3px solid #fff}
+.sticker svg{width:100%;height:100%;display:block}
+.modal h2{font-size:2rem}
+
+/* letter */
+.letter{width:100%;max-width:520px;background:var(--card);border:1px solid var(--card-edge);border-radius:20px;padding:26px 24px;text-align:left;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.letter .to{font-family:var(--font-display);color:var(--rose);font-size:1.5rem;margin:0 0 10px}
+.letter p{margin:0 0 14px;color:#e6e2ee}
+.letter p.line{opacity:0;transform:translateY(8px);animation:line .6s ease forwards}
+@keyframes line{to{opacity:1;transform:none}}
+.letter .from{font-family:var(--font-display);color:var(--rose-soft);font-size:1.5rem;text-align:right;margin:6px 0 0}
+
+/* memories */
+.mem-grid{width:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:20px;align-items:start;text-align:center}
+@media(max-width:720px){.mem-grid{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--card);border:1px solid var(--card-edge);border-radius:22px;padding:22px 18px;display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0}
+.panel h3{font-family:var(--font-display);font-size:1.9rem;margin:0;font-weight:700}
+.panel small{color:var(--muted)}
+.disc{width:128px;height:128px;border-radius:50%;background:radial-gradient(circle at 50% 50%,#12141f 0 9%,var(--rose) 10% 100%);display:grid;place-items:center;box-shadow:0 0 40px rgba(224,105,143,.35);margin:6px 0}
+.disc svg{width:46px;height:46px;fill:none;stroke:#2a1220;stroke-width:2;stroke-linecap:round}
+.disc.spin{animation:spin 6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.now{font-weight:700;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seek,.vol{width:100%;accent-color:var(--rose)}
+.times{width:100%;display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.ctrls{display:flex;align-items:center;gap:14px}
+.ic{width:42px;height:42px;border-radius:50%;border:0;background:#242a3d;color:var(--ink);display:grid;place-items:center;cursor:pointer}
+.ic.play{width:54px;height:54px;background:var(--rose-dark)}
+.ic svg{width:20px;height:20px;fill:currentColor}
+.volrow{width:100%;display:flex;align-items:center;gap:10px;color:var(--muted)}
+.volrow svg{width:18px;height:18px;fill:currentColor;flex:none}
+.plist{width:100%;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;text-align:left}
+.plist li button{width:100%;text-align:left;background:#20263a;border:0;color:var(--ink);padding:9px 12px;border-radius:10px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plist li button.cur{background:rgba(224,105,143,.22);color:var(--rose-soft)}
+.empty{color:var(--muted);font-size:.9rem;margin:4px 0}
+.outline{width:100%;border:1.5px solid var(--rose);background:transparent;color:var(--ink);padding:11px;border-radius:999px;font-weight:600;cursor:pointer}
+.outline:hover{background:rgba(224,105,143,.12)}
+
+.photos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;width:100%}
+.photo{background:#161a28;border-radius:16px;padding:8px;display:flex;flex-direction:column;gap:6px}
+.photo .pic{aspect-ratio:1;border-radius:11px;overflow:hidden;background:var(--paper)}
+.photo img,.photo svg{width:100%;height:100%;object-fit:cover;display:block}
+.photo span{font-size:.8rem;color:var(--muted)}
+.addphoto{aspect-ratio:auto;min-height:150px;border:1.5px dashed var(--rose-dark);border-radius:16px;background:#242a3d;color:var(--ink);cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:.9rem}
+.addphoto b{font-size:2rem;font-weight:400;line-height:1}
+.addphoto:hover{background:#2b3249}
+.fav{font-family:var(--font-display);font-size:1.8rem;color:var(--ink);margin:0}
+
+.ask{margin-top:6px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.ask .wait{min-height:1.5em;color:var(--rose-soft);margin:0;max-width:26rem}
+
+/* final */
+.bouquet{width:min(250px,60vw);filter:drop-shadow(0 18px 30px rgba(0,0,0,.5));animation:drop 1.1s cubic-bezier(.2,.8,.2,1) both}
+@keyframes drop{from{opacity:0;transform:translateY(-40px) scale(.9)}to{opacity:1;transform:none}}
+.promises{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media(max-width:620px){.promises{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.promise{background:var(--card);border:1px solid var(--card-edge);border-radius:16px;padding:14px 10px;font-weight:600;font-size:.92rem;display:flex;flex-direction:column;align-items:center;gap:6px;opacity:0;animation:line .6s ease forwards}
+.promise svg{width:26px;height:26px;fill:var(--rose-soft)}
+.forever{font-family:var(--font-display);font-size:clamp(2.4rem,9vw,3.6rem);color:var(--rose);margin:8px 0 0;text-shadow:0 0 30px rgba(224,105,143,.5)}
+.replay{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font-size:.85rem}
+
+.burst{position:fixed;z-index:15;pointer-events:none;bottom:-20px;color:var(--rose);animation:burst 2.6s ease-out forwards}
+@keyframes burst{to{transform:translate(var(--dx),-105vh) rotate(var(--rot));opacity:0}}
+
+@media (prefers-reduced-motion:reduce){
+  .ambient{display:none}
+  .screen.enter,.bob,.bouquet,.disc.spin,.modal{animation:none}
+  .letter p.line,.promise{animation:none;opacity:1;transform:none}
+}
+[hidden]{display:none!important}
+img{max-width:100%}
+</style>
+
+</head>
+<body>
+<div class="ambient" id="ambient" aria-hidden="true"></div>
+
+<main class="app" id="app">
+
+  <!-- 1: manao -->
+  <section class="screen" data-step="0">
+    <div class="frame bob" id="cat1"></div>
+    <h1>Hey my 11:11<span aria-hidden="true">🥺</span></h1>
+    <p class="lead">Mujhe pata hai maine apni Maharani ka Dil dukhaya hai... 😭</p>
+    <p class="soft">Aur mujhe yeh bhi pata hai maine galti ki hai. Please Apna Motta ka baat sun lo.. 🥹</p>
+    <div class="row">
+      <button class="btn" id="okSpeak">Theek hai, bolo Motta</button>
+      <button class="btn ghost" id="stillAngry">Nahi, Nikhil Yadav</button>
+    </div>
+  </section>
+
+  <!-- 2: maafi -->
+  <section class="screen" data-step="1" hidden>
+    <h2>Dil Se Sorry... <span aria-hidden="true">💗</span></h2>
+    <article class="letter" id="letter"></article>
+    <button class="btn" id="moreBtn">Aur bhi kuch...</button>
+  </section>
+
+  <!-- 3: yaadein + sawal -->
+  <section class="screen" data-step="2" hidden>
+    <h2>Hamari Yaadein <span aria-hidden="true">💭</span></h2>
+    <p class="soft">APNE kutta, motka, paglachoda Nikhil Yadav, Ahir, doodhwala ko maaf kr doo...🥺</p>
+    <div class="mem-grid">
+      <div class="panel">
+        <h3>Our Songs 🎵</h3>
+        <small>Songs that remind me of you</small>
+        <div class="disc" id="disc"><svg viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="16.5" cy="16" r="2.5"/></svg></div>
+        <div class="now" id="now">No songs yet</div>
+        <small id="nowHint">Upload our special songs below</small>
+        <input class="seek" id="seek" type="range" min="0" max="100" value="0" step="0.1" aria-label="Song position">
+        <div class="times"><span id="tCur">0:00</span><span id="tDur">0:00</span></div>
+        <div class="ctrls">
+          <button class="ic" id="prev" aria-label="Previous song"><svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+          <button class="ic play" id="play" aria-label="Play"><svg viewBox="0 0 24 24" id="playIcon"><path d="M8 5v14l11-7z"/></svg></button>
+          <button class="ic" id="next" aria-label="Next song"><svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+        </div>
+        <div class="volrow"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 4V5L7 9z"/></svg><input class="vol" id="vol" type="range" min="0" max="1" step="0.05" value="0.8" aria-label="Volume"></div>
+        <small style="align-self:flex-start;letter-spacing:.08em">PLAYLIST</small>
+        <ul class="plist" id="plist"></ul>
+        <p class="empty" id="plistEmpty">No songs added yet. Click below to add our special songs 💕</p>
+        <button class="outline" id="addSong">♫ Add a Song</button>
+        <input type="file" id="songFile" accept="audio/*" multiple hidden>
+        <audio id="audio" preload="metadata"></audio>
+      </div>
+      <div class="panel">
+        <p class="fav">Why you are my favorite person 💗</p>
+        <div class="photos" id="photos"></div>
+        <input type="file" id="photoFile" accept="image/*" multiple hidden>
+      </div>
+    </div>
+    <div class="ask">
+      <h2>Kya tum mujhe maaf nhi karogi? 🥺</h2>
+      <p class="wait" id="wait" aria-live="polite"></p>
+      <div class="row">
+        <button class="btn" id="yes">Haan, maaf kiya motta 💗</button>
+        <button class="btn ghost" id="think">Kutta sochne doo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4: shukriya -->
+  <section class="screen" data-step="3" hidden>
+    <div class="frame bob" id="cat2"></div>
+    <h1>Thanku! <span aria-hidden="true">😍</span></h1>
+    <p class="soft" style="font-size:1.1rem">Promise karta hu kabhi ek boond aasu nhi aane dunga aankh meh tmhara motta ka wada hai tumse!</p>
+    <p class="forever" style="font-size:2.2rem;margin:0">I love you so so muchhh >> 3000 ♥</p>
+    <button class="btn" id="special">Tumhare liye kuch special hai Maharani... 🌹</button>
+  </section>
+
+  <!-- 5: gulab -->
+  <section class="screen" data-step="4" hidden>
+    <div class="bouquet" id="bouquet"></div>
+    <div class="promises" id="promises"></div>
+    <p class="forever">I Love You forever and ever Maaf krdo motta ko please 🥺</p>
+    <button class="replay" id="replay">Phir se dekho lo mottu</button>
+  </section>
+
+  <div class="dots" id="dots" aria-label="Progress"><span></span><span></span><span></span><span></span><span></span></div>
+</main>
+
+<div class="backdrop" id="modal" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="sticker" id="sticker"></div>
+    <h2 id="mTitle">Please na... 🥺</h2>
+    <p class="soft">Bas ek chance do mujhe... Main sach mein sorry bolna chahta hoon Dil se . Please? 💕</p>
+    <button class="btn" id="mOk" style="width:100%">Okay Bolo</button>
+  </div>
+</div>
+
+<script>
+/* ---- Edit these lines to personalise ---- */
+const LETTER_TO = "Meri MAHARANI...";
+const SIGN_OFF  = "Tumhara MOTTA(DeoDore)";
+const LETTER = [
+  "Mujhe pata hai maine tumhe hurt kiya. Ye soch ke bohot bura lagta hai.",
+  "Tum mere liye kitne special ho, words mein nahi bata sakta.",
+  "Jo bhi hua, uska koi excuse nahi. Maine galti ki aur main accept karta hoon.",
+  "Agar pata hota ushi tym maafi mang leta mottu past ko badal nhi skta but sudhar skta hu aaur aage kabhi aise nhi hoga.",
+  "Kabhi tmko meh compare nhi kr skta kisi se but darr bhi rhta tha tmko khone ka meh tmko khoo nhi skta mottu",
+  "Defend nhi karungaa khud ko na hi sahi sabit kyu ki mera gltii thaa. Tum hi kehti ho na jabb jane tabh hi sahi toh meh bhi samaj gya ek baar meh bhul jaoo possible nhi par mereko bhul ko sudharne ka mauka doo tm usko thik kr saku tmhare liye ",
+  "Self realization hai tmhare motta ko. Tmhara motta hu na apna motta ko ek mauka dee doo kabhi tmhara kabhi kuch nhi manga tum se pehli baar mauka chahta hu humare liye humare riste liye ek aacha bf bann na chahtu sirf apni motti ke liye",
+  "Tumhari feelings matter karta hain mere liye. Bohot zyada.",
+  "Main promise karta hoon agli baar se kabhi nhi hooga tmko pata hai na tumhara motta kabhi jhootha promise nahi khaata.",
+  "Tum mujhe itna pyaar karti  ho. I'm really sorry.",
+  "Apne Bassanio ko maaf kr doo three pound of flesh apne portia ko dene ke liye ready hai tmhara Bassanio but choose apni MAHARANI KO hi kregaa chahe SILVER meh ho yah GOLD meh yah phir WOODEN me.",
+  "Please♥",
+  "Main jaanta hu maine tumhein hurt kiya hai, aur is baat ka realization mujhe itna gehra hai ki main words mein bol nahi sakta.",
+  "Par please, apne DEODORE ko ek aakhri mauka de do sabbit krne ke liye. Main wada karta hu ki aage se na main kabhi aisa karunga, na hi apni taraf se hone dunga. Main ek behtar insaan banna chahta hu—tumhare liye, aur bilkul tumhari tarah ek behtar insaan banna chahta hu. Tum meri zindagi mein woh ho jise khone ke khayal se hi mera dil kaanp uthta hai. Har mandir mein bas tumhein hi maanga hai. Mera irada kabhi tumhare emotions ko hurt karne ka nahi tha, par galati hui hai aur iska dard mujhe har pal mehsoos ho raha hai. Tumhein khone ka matlab hoga khud ko poori tarah se kho dena... FIR main kisse ladunga? Kisse apne poore din ki baatein share karunga? Kisko haq se apna kahunga, kiske saath baahar jaunga, aur mera guide kaun banega",
+  "Jab se tum aayi ho, mere dil mein kisi aur ke liye kabhi koi jagah nahi rahi. Ek halki roast se shuru hua yeh safar aaj itne gehre pyaar tak pahunch chuka hai ki tumhein shabdon mein define karna mere liye namumkin hai.",
+  "Tum meri Maharani ho. Yeh Motta apni Motti se lad zaroor sakta hai, par tumse baat kiye bina ek pal bhi nahi reh sakta. Aaj 6 din ho gaye hain, par lag raha hai jaise 6 saal beet gaye ho",
+  "Please apne Motta ko maaf kar do... Motta loves you more than infinity times Hanuman ji nhi hu seena chir kr deekha pau ki sirf tm ho ishmeh. Plz ek mauka de do, tumhein kabhi sad nahi hone dunga"
+  
+];
+const PROMISES = [
+  ["moon","Hamesha tumhare saath rahunga"],
+  ["sun","Kabhi Roone nhi dunga"],
+  ["star","Har problem meh saath khada rahunga"],
+  ["flower","Tumhari baato ko samjhunga aur glti pe samjhaunga"],
+  ["wing","Kabhi crowd meh akela feel nhi hoone dunga"],
+  ["spark","Kabhi Hurt nhi karunga hamesha tmhara smile bann kr rahunga"],
+  ["heart","Tumhare liye apna dil hamesha khula rakhoonga"],
+  ["lock","Tumhare secrets ko hamesha safe rakhoonga"],
+  ["key","Tumhare liye hamesha ek solution dhoondhunga"],
+  ["gift","Tumhare Hamesha Special feel karwaunga"],
+  ["crown","Tumhare liye hamesha ek king bann kr rahunga"],
+  ["ring","Tumhare liye hamesha ek promise ring ke tarah rahenge"],
+  ["diamond","Hamesha Safe feel karwaunga"],
+  ["rose","Har Dard ko saath meh batungaa"],
+  ["gem","Last but not the least, Tumse zindagi bhar pyaar karunga always constant"]
+];
+
+const $ = id => document.getElementById(id);
+
+/* ---- original mascot ---- */
+function cat(mood){
+  const S = 'stroke="#4a2c2c" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"';
+  const eyes = mood==='happy'
+    ? `<path d="M72 104q9-12 18 0M130 104q9-12 18 0" fill="none" ${S}/>`
+    : `<circle cx="81" cy="104" r="7.5" fill="#4a2c2c"/><circle cx="139" cy="104" r="7.5" fill="#4a2c2c"/><circle cx="83.5" cy="101" r="2.4" fill="#fff"/><circle cx="141.5" cy="101" r="2.4" fill="#fff"/>`;
+  const brows = mood==='sad'
+    ? `<path d="M68 86q10-9 22-4M152 86q-10-9-22-4" fill="none" ${S}/>`
+    : mood==='plead' ? `<path d="M70 88q10-6 20-1M150 88q-10-6-20-1" fill="none" ${S}/>` : '';
+  const mouth = mood==='happy'
+    ? `<path d="M96 124q14 20 28 0z" fill="#e0698f" ${S}/>`
+    : mood==='sad' ? `<path d="M100 130q10-8 20 0" fill="none" ${S}/>`
+    : `<path d="M98 122q6 7 12 0q6 7 12 0" fill="none" ${S}/>`;
+  const tears = mood==='sad' ? `<path d="M76 116q-5 12 0 16q5-4 0-16zM144 116q-5 12 0 16q5-4 0-16z" fill="#9fd3f2"/>` : '';
+  return `<svg viewBox="0 0 220 220" role="img" aria-label="Cute cat">
+    <ellipse cx="110" cy="190" rx="52" ry="8" fill="#e6dde0"/>
+    <path d="M70 160q-6 30 10 32h60q16-2 10-32" fill="#fff" ${S}/>
+    <path d="M168 176q28 4 22-18" fill="none" ${S}/>
+    <path d="M38 78L46 22l44 24M182 78L174 22l-44 24" fill="#fff" ${S}/>
+    <path d="M52 52l4-18 16 9M168 52l-4-18-16 9" fill="#f9c9d6" stroke="none"/>
+    <ellipse cx="110" cy="108" rx="80" ry="68" fill="#fff" ${S}/>
+    <path d="M92 44v14M110 41v16M128 44v14" ${S} stroke="#cfc6c9"/>
+    <ellipse cx="62" cy="124" rx="14" ry="10" fill="#f8b9cb"/><ellipse cx="158" cy="124" rx="14" ry="10" fill="#f8b9cb"/>
+    ${brows}${eyes}${tears}${mouth}
+    <ellipse cx="88" cy="168" rx="14" ry="10" fill="#fff" ${S}/><ellipse cx="132" cy="168" rx="14" ry="10" fill="#fff" ${S}/>
+  </svg>`;
+}
+function couple(a,b,bg){
+  return `<svg viewBox="0 0 200 200" role="img" aria-label="Couple holding hands"><rect width="200" height="200" fill="${bg}"/>
+    <circle cx="150" cy="40" r="3" fill="#f4a3b8"/><path d="M100 46q-12-14 0-20q12 6 0 20z" fill="#f4a3b8" transform="translate(0 -4)"/>
+    <circle cx="72" cy="70" r="20" fill="#f6d4bd"/><path d="M52 66q4-24 24-22q20 2 16 22q-12-10-40 0z" fill="#4a3228"/>
+    <rect x="54" y="92" width="36" height="52" rx="14" fill="${a}"/><rect x="58" y="142" width="12" height="40" rx="5" fill="#59627a"/><rect x="76" y="142" width="12" height="40" rx="5" fill="#59627a"/>
+    <circle cx="130" cy="74" r="19" fill="#f6d4bd"/><path d="M110 74q-6-30 20-28q24 2 18 34q-6-18-22-20q-12 0-16 14z" fill="#5b3a2c"/><path d="M146 48q10-8 8 4z" fill="#e0466d"/>
+    <path d="M114 94h32l8 48h-48z" fill="${b}"/><rect x="120" y="142" width="10" height="38" rx="5" fill="#f6d4bd"/><rect x="136" y="142" width="10" height="38" rx="5" fill="#f6d4bd"/>
+    <path d="M88 106q12 8 26 0" fill="none" stroke="#f6d4bd" stroke-width="7" stroke-linecap="round"/>
+  </svg>`;
+}
+function rose(x,y,r){
+  const d = '#b83a5e';
+  return `<g transform="translate(${x} ${y})"><circle r="${r}" fill="#f08a78"/><circle r="${r*.78}" fill="#f4a08d" stroke="${d}" stroke-width="1.5" stroke-opacity=".35"/><path d="M${-r*.6} ${-r*.1}q${r*.6} ${-r*.9} ${r*1.2} 0" fill="none" stroke="${d}" stroke-width="2" stroke-opacity=".5"/><circle r="${r*.45}" fill="#ee7f70"/><path d="M${-r*.25} 0q${r*.25} ${-r*.4} ${r*.5} 0q${-r*.25} ${r*.3} ${-r*.5} 0z" fill="${d}" fill-opacity=".55"/></g>`;
+}
+function bouquet(){
+  return `<svg viewBox="0 0 300 360" role="img" aria-label="Bouquet of roses">
+    <path d="M70 120q-20 20-10 60M230 120q20 20 10 60" fill="none" stroke="#6d9a76" stroke-width="10" stroke-linecap="round"/>
+    <ellipse cx="82" cy="108" rx="30" ry="12" fill="#6d9a76" transform="rotate(-35 82 108)"/><ellipse cx="218" cy="108" rx="30" ry="12" fill="#6d9a76" transform="rotate(35 218 108)"/>
+    ${rose(150,62,40)}${rose(98,92,34)}${rose(202,92,34)}${rose(128,120,30)}${rose(174,120,30)}${rose(70,130,24)}${rose(230,130,24)}
+    <path d="M62 150L238 150L172 338L128 338Z" fill="#eceaee"/>
+    <path d="M62 150L150 220L128 338Z" fill="#d9d6dd"/><path d="M238 150L150 220L172 338Z" fill="#f6f4f8"/>
+    <path d="M132 196q18 12 36 0q-8 22-18 22t-18-22z" fill="#f5a4bd"/><path d="M140 214q-10 40-6 66M160 214q10 40 6 66" fill="none" stroke="#f5a4bd" stroke-width="7" stroke-linecap="round"/>
+  </svg>`;
+}
+const ICONS = {
+  moon:'<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>',
+  sun:'<circle cx="12" cy="12" r="5"/><path d="M12 1v3M12 20v3M1 12h3M20 12h3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1" stroke="#f6a9c3" stroke-width="2" stroke-linecap="round"/>',
+  star:'<path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.2 5.8 20.9l1.6-7L2 9.2l7.1-.6z"/>',
+  flower:'<circle cx="12" cy="12" r="3"/><circle cx="12" cy="5.5" r="3.5"/><circle cx="12" cy="18.5" r="3.5"/><circle cx="5.5" cy="12" r="3.5"/><circle cx="18.5" cy="12" r="3.5"/>',
+  wing:'<path d="M3 12c4-8 12-8 18 0-4 3-8 3-10 8-1-3-4-4-8-8z"/>',
+  spark:'<path d="M12 2l2 7 7 2-7 2-2 7-2-7-7-2 7-2z"/>',
+  heart:'<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.800-8 11-8 11z"/>',
+  lock:'<path d="M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z"/>',
+  key:'<path d="M8 3a5 5 0 1 0 4.6 7H15v2.500h2.500V10H20V7.500h-7.400A5 5 0 0 0 8 3zm-1.500 3.500a1.500 1.500 0 1 1 0 3 1.500 1.500 0 0 1 0-3z"/>',
+  gift:'<path d="M3 8h18v4H3zM4 13h16v8H4zM11 8h2v13h-2z"/><path d="M12 8C9 8 7 6 8.500 4.500S12 5 12 8zM12 8c3 0 5-2 3.500-3.500S12 5 12 8z"/>',
+  crown:'<path d="M3 8l4.500 4L12 5l4.500 7L21 8l-2 11H5z"/>',
+  ring:'<path d="M12 22a7 7 0 1 1 0-14 7 7 0 0 1 0 14zm0-3a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M9 2h6l2 4H7z"/>',
+  diamond:'<path d="M6 3h12l4 6-10 12L2 9z"/>',
+  rose:'<circle cx="12" cy="9" r="6"/><path d="M11 14h2v8h-2z"/><path d="M13 18c3 0 5-1 6-3-3-.500-5 .500-6 3z"/>',
+  gem:'<path d="M12 2l3 5h5l-2 5-6 10-6-10-2-5h5z"/>'
+};
+
+/* ---- ambient hearts ---- */
+(function(){
+  const box = $('ambient');
+  for(let i=0;i<16;i++){
+    const h = document.createElement('i');
+    h.textContent = '♥';
+    h.style.left = Math.random()*100+'%';
+    h.style.fontSize = (10+Math.random()*16)+'px';
+    h.style.animationDuration = (12+Math.random()*14)+'s';
+    h.style.animationDelay = (-Math.random()*20)+'s';
+    box.appendChild(h);
+  }
+})();
+
+/* ---- steps ---- */
+const screens = [...document.querySelectorAll('.screen')];
+const dots = [...$('dots').children];
+let cur = 0;
+function go(n){
+  screens[cur].hidden = true;
+  cur = n;
+  const s = screens[cur];
+  s.hidden = false;
+  s.classList.remove('enter'); void s.offsetWidth; s.classList.add('enter');
+  dots.forEach((d,i)=>{ d.className = i===cur?'on':(i<cur?'done':''); });
+  $('app').classList.toggle('wide', cur===2);
+  window.scrollTo(0,0);
+  if(cur===1) writeLetter();
+  if(cur===4) finale();
+}
+
+$('cat1').innerHTML = cat('sad');
+$('cat2').innerHTML = cat('happy');
+$('sticker').innerHTML = cat('plead');
+
+/* step 1 */
+const modal = $('modal');
+function openModal(){ modal.hidden = false; $('mOk').focus(); }
+function closeModal(){ modal.hidden = true; go(1); }
+$('okSpeak').onclick = () => go(1);
+$('stillAngry').onclick = openModal;
+$('mOk').onclick = closeModal;
+document.addEventListener('keydown', e => { if(e.key==='Escape' && !modal.hidden) closeModal(); });
+
+/* step 2 */
+function writeLetter(){
+  const box = $('letter');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  box.innerHTML = '';
+  const to = document.createElement('p'); to.className='to'; to.textContent = LETTER_TO; box.appendChild(to);
+  LETTER.forEach((t,i)=>{
+    const p = document.createElement('p');
+    p.className = 'line'; p.textContent = t;
+    p.style.animationDelay = reduce ? '0s' : (0.3+i*0.55)+'s';
+    box.appendChild(p);
+  });
+  const f = document.createElement('p'); f.className='from line'; f.textContent = '— '+SIGN_OFF;
+  f.style.animationDelay = reduce ? '0s' : (0.3+LETTER.length*0.55)+'s';
+  box.appendChild(f);
+}
+$('moreBtn').onclick = () => go(2);
+
+/* step 3: photos */
+const photos = $('photos');
+const samples = [
+  {svg:couple('#f2a37c','#f08aa5','#fbeee9'),cap:'Hum dono'},
+  {svg:couple('#8fb2e8','#f6c26b','#eaf1fb'),cap:'Ek aur yaad'}
+];
+function photoCard(inner, cap){
+  const d = document.createElement('div'); d.className='photo';
+  d.innerHTML = `<div class="pic">${inner}</div><span></span>`;
+  d.querySelector('span').textContent = cap;
+  return d;
+}
+const addTile = document.createElement('button');
+addTile.className='addphoto'; addTile.innerHTML='<b>+</b>Add Photo';
+addTile.onclick = () => $('photoFile').click();
+const PHOTOS = [
+  {src: "photos/1.jpeg", cap: "Hamari pehli date"},
+  {src: "photos/2.jpeg", cap: "Wo din yaad hai?"},
+  {src: "photos/3.jpeg", cap: "Wo din yaad hai?"},
+  {src: "photos/4.jpeg", cap: "pehli baar samne saree meh?"},
+  {src: "photos/5.jpeg", cap: "Wo din yaad hai?"},
+  {src: "photos/6.jpeg", cap: "Wo din yaad hai?"},
+  {src: "photos/7.jpeg", cap: "Wo din yaad hai?"},
+  {src: "photos/8.jpeg", cap: "Wo din yaad hai?"},
+  {src: "photos/9.jpeg", cap: "Wo din yaad hai?"}
+];
+PHOTOS.forEach(p => photos.appendChild(photoCard(`<img src="${p.src}" alt="${p.cap}">`, p.cap)));
+photos.appendChild(addTile);
+$('photoFile').onchange = e => {
+  [...e.target.files].forEach(f => {
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(f); img.alt = 'Our photo';
+    photos.insertBefore(photoCard(img.outerHTML,'Hamari yaad'), addTile);
+  });
+  e.target.value = '';
+};
+
+/* step 3: songs */
+const SONGS = [
+  {name: "Alfaaz", url: "songs/Alfaaz.mp3"},
+  {name: "Dil ibaadat", url: "songs/Dil ibaadat.mp3"},
+  {name: "Humsafar", url: "songs/Humsafar.mp3"},
+  {name: "Tu chahiye", url: "songs/Tu chahiye.mp3"},
+  {name: "Tu jo mila", url: "songs/Tu jo mila.mp3"},
+];
+const audio = $('audio'), list = [...SONGS];
+let idx = -1;
+const fmt = s => isFinite(s) ? Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0') : '0:00';
+function renderList(){
+  const ul = $('plist'); ul.innerHTML='';
+  list.forEach((s,i)=>{
+    const li = document.createElement('li'), b = document.createElement('button');
+    b.textContent = (i+1)+'. '+s.name; if(i===idx) b.className='cur';
+    b.onclick = () => playAt(i);
+    li.appendChild(b); ul.appendChild(li);
+  });
+  $('plistEmpty').hidden = list.length>0;
+}
+function setPlayIcon(playing){
+  $('playIcon').innerHTML = playing ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>' : '<path d="M8 5v14l11-7z"/>';
+  $('play').setAttribute('aria-label', playing?'Pause':'Play');
+  $('disc').classList.toggle('spin', playing);
+}
+function playAt(i){
+  if(!list.length) return;
+  idx = (i+list.length)%list.length;
+  audio.src = list[idx].url;
+  audio.play().catch(()=>{});
+  $('now').textContent = list[idx].name;
+  $('nowHint').textContent = 'Now playing';
+  renderList();
+}
+$('addSong').onclick = () => $('songFile').click();
+$('songFile').onchange = e => {
+  const first = list.length;
+  [...e.target.files].forEach(f => list.push({name:f.name.replace(/\.[^.]+$/,''), url:URL.createObjectURL(f)}));
+  e.target.value=''; renderList();
+  if(idx<0 && list.length) playAt(first);
+};
+$('play').onclick = () => {
+  if(idx<0){ playAt(0); return; }
+  audio.paused ? audio.play().catch(()=>{}) : audio.pause();
+};
+$('prev').onclick = () => playAt(idx-1);
+$('next').onclick = () => playAt(idx+1);
+audio.onplay = () => setPlayIcon(true);
+audio.onpause = () => setPlayIcon(false);
+audio.onended = () => playAt(idx+1);
+audio.onloadedmetadata = () => { $('tDur').textContent = fmt(audio.duration); };
+audio.ontimeupdate = () => {
+  $('tCur').textContent = fmt(audio.currentTime);
+  if(audio.duration) $('seek').value = audio.currentTime/audio.duration*100;
+};
+$('seek').oninput = e => { if(audio.duration) audio.currentTime = e.target.value/100*audio.duration; };
+$('vol').oninput = e => { audio.volume = +e.target.value; };
+audio.volume = .8;
+renderList();
+
+/* step 3: the question */
+$('think').onclick = () => {
+  $('wait').textContent = 'Theek hai, Main yahin hoon, kahin nahi ja raha Bahar intezzar kar raha tmhara Nikhil Yadav . Tumse bohot pyaar karta hoon Tmse. 💗';
+};
+$('yes').onclick = () => { audio.pause(); go(3); };
+
+/* step 4 */
+$('special').onclick = () => go(4);
+
+/* step 5 */
+$('bouquet').innerHTML = bouquet();
+$('promises').innerHTML = PROMISES.map((p,i)=>
+  `<div class="promise" style="animation-delay:${0.4+i*0.18}s"><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[p[0]]}</svg><span>${p[1]}</span></div>`).join('');
+function finale(){
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  for(let i=0;i<36;i++){
+    const h = document.createElement('span');
+    h.className='burst'; h.textContent = Math.random()>.5?'♥':'💗';
+    h.style.left = (5+Math.random()*90)+'%';
+    h.style.fontSize = (14+Math.random()*22)+'px';
+    h.style.setProperty('--dx',(Math.random()*120-60)+'px');
+    h.style.setProperty('--rot',(Math.random()*60-30)+'deg');
+    h.style.animationDelay = (Math.random()*1.4)+'s';
+    document.body.appendChild(h);
+    setTimeout(()=>h.remove(), 4500);
+  }
+}
+$('replay').onclick = () => go(0);
+
+go(0);
+</script>
+</body>
+</html>
